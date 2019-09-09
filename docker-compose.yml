@@ -1,0 +1,110 @@
+version: '3.1'
+services:
+  
+  nginx:
+    container_name: nginx_load_balance
+    build: .
+    ports:
+      - 80:80
+    depends_on:
+      - backend
+      # - frontend
+    env_file:
+      - ./sme_coad/.env
+
+  db:
+    image: postgres:11.2-alpine
+    container_name: postgres
+    restart: always
+    env_file:
+      - ./sme_coad/.env
+    volumes:
+      - pgdata:/var/lib/postgresql/data    
+    ports:
+      - "5431:5432"
+    
+  pgadmin4:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: always
+    volumes: 
+      - pgadmindata:/var/lib/pgadmin/storage/
+    ports:
+      - 9090:80
+    env_file:
+      - ./sme_coad/.env
+    depends_on: 
+      - db
+  
+  backend:
+    image: coad_backend:latest
+    container_name: backend_api
+    # http://docs.gunicorn.org/en/latest/design.html#how-many-workers
+    # http://docs.gunicorn.org/en/latest/settings.html#worker-class
+    command: "gunicorn config.wsgi:application --bind=0.0.0.0:8000 -w 8"
+    env_file: ./sme_coad/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  redis:
+    image: redis:5.0.0-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data/db
+  
+  sentry:
+    image: sentry
+    container_name: sentry
+    links:
+     - redis
+     - db
+    ports:
+     - 9000:9000
+    environment:
+      SENTRY_SECRET_KEY: 'adminadmin'
+      SENTRY_POSTGRES_HOST: db
+      SENTRY_DB_USER: admin
+      SENTRY_DB_PASSWORD: 12345qw
+      SENTRY_REDIS_HOST: redis
+
+  # cron:
+  #   image: sentry
+  #   links:
+  #    - redis
+  #    - db
+  #   command: "sentry run cron"
+  #   environment:
+  #     SENTRY_SECRET_KEY: 'adminadmin'
+  #     SENTRY_POSTGRES_HOST: db
+  #     SENTRY_DB_USER: admin
+  #     SENTRY_DB_PASSWORD: 12345qw
+  #     SENTRY_REDIS_HOST: redis
+
+  worker:
+    container_name: sentry_work
+    image: sentry
+    links:
+     - redis
+     - db
+    command: "sentry run worker"
+    environment:
+      SENTRY_SECRET_KEY: 'adminadmin'
+      SENTRY_POSTGRES_HOST: db
+      SENTRY_DB_USER: admin
+      SENTRY_DB_PASSWORD: 12345qw
+      SENTRY_REDIS_HOST: redis
+
+networks:
+  default:
+    external:
+      name: coad
+
+volumes:
+  pgdata:
+  redisdata:
+  pgadmindata:
