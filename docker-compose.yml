@@ -2,7 +2,7 @@ version: '3.1'
 services:
   
   nginx:
-    container_name: nginx_load_balance
+    container_name: coad-nginx
     build: .
     ports:
       - 80:80
@@ -14,7 +14,7 @@ services:
 
   db:
     image: postgres:11.2-alpine
-    container_name: postgres
+    container_name: coad-postgres
     restart: always
     env_file:
       - ./sme_coad/.env
@@ -25,7 +25,7 @@ services:
     
   pgadmin4:
     image: dpage/pgadmin4
-    container_name: pgadmin4
+    container_name: coad-pgadmin4
     restart: always
     volumes: 
       - pgadmindata:/var/lib/pgadmin/storage/
@@ -37,7 +37,7 @@ services:
       - db
   
   backend:
-    image: coad_backend:latest
+    image: coad-backend:latest
     container_name: backend_api
     # http://docs.gunicorn.org/en/latest/design.html#how-many-workers
     # http://docs.gunicorn.org/en/latest/settings.html#worker-class
@@ -51,7 +51,7 @@ services:
 
   redis:
     image: redis:5.0.0-alpine
-    container_name: redis
+    container_name: coad-redis
     ports:
       - "6379:6379"
     volumes:
@@ -59,7 +59,7 @@ services:
   
   sentry:
     image: sentry
-    container_name: sentry
+    container_name: coad-sentry
     links:
      - redis
      - db
@@ -86,7 +86,7 @@ services:
   #     SENTRY_REDIS_HOST: redis
 
   worker:
-    container_name: sentry_work
+    container_name: coad-sentry-work
     image: sentry
     links:
      - redis
