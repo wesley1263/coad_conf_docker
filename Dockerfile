@@ -1,6 +1,6 @@
 
 FROM nginx:1.15.12-alpine
-COPY ./sme_coad/staticfiles/ /usr/local/nginx/html/
+COPY ./backend/staticfiles/ /usr/local/nginx/html/
 COPY ./conf/default.conf /etc/nginx/conf.d/
 COPY ./utility/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
