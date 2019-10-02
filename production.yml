@@ -7,9 +7,12 @@ services:
       - 80:80
     depends_on:
       - backend
-      # - frontend
-    environment:
-      SERVER_NAME: localhost
+      - frontend
+    env_file: .env
+  
+  frontend:
+    image: xxxfinal
+    env_file: .env
 
   db:
     image: postgres:11.2-alpine
@@ -20,11 +23,8 @@ services:
     ports:
       - 5432:5432
     
-
   backend:
-    build: ./backend/.
-    # http://docs.gunicorn.org/en/latest/design.html#how-many-workers
-    # http://docs.gunicorn.org/en/latest/settings.html#worker-class
+    image: coad/teste
     command: "gunicorn config.wsgi:application --bind=0.0.0.0:8000 -w 8"
     env_file: ./.env
     ports:
@@ -37,13 +37,8 @@ services:
     image: redis:5.0.0-alpine
     ports:
       - "6379:6379"
-    volumes:
-      - redisdata:/data/db
   
 networks:
   default:
     external:
       name: coad-network
-
-volumes:
-  redisdata:
