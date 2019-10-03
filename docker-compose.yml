@@ -1,7 +1,6 @@
 version: "3.1"
 services:
   nginx:
-    restart: always
     container_name: coad-nginx
     build: .
     ports:
@@ -15,21 +14,23 @@ services:
     container_name: coad-frontend
     image: coad2019/contratos-frontend
     env_file: .env
+    depends_on:
+      - db
+      - api
 
   db:
-    image: postgres:11.2-alpine
     container_name: coad-db
+    image: postgres:11.2-alpine
     restart: always
     env_file: .env
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data
     ports:
       - 5432:5432
 
   api:
-    image: coad/teste
     container_name: coad-api
-    restart: always
+    image: coad2019/contratos
     command: "gunicorn config.wsgi:application --bind=0.0.0.0:8000 -w 8"
     env_file: .env
     ports:
@@ -39,11 +40,14 @@ services:
       - redis
 
   redis:
-    image: redis:5.0.0-alpine
     container_name: coad-redis
-    restart: always
+    image: redis:5.0.0-alpine
     ports:
       - "6379:6379"
+
+# networks:
+#   coad-network:
+#     driver: bridge
 
 networks:
   default:
