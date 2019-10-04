@@ -1,6 +1,7 @@
 sme_coad
 teste/
+pgdata/
 coad_frontend/
-backend/
-frontend/
+#backend/
+#frontend/
 postgres-data/
